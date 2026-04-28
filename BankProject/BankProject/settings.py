@@ -156,6 +156,7 @@ resultMessages = {
     1003 : "Talbar dutuu",
     1004 : "Not found",
     200 : "Success",
+    400 : "Bad request",
     1006 : "DB Дотоод алдаа гарлаа",
 
 }
