@@ -140,7 +140,7 @@ def connectDB():
         dbname = 'dbsw23',
         user = 'usersw23',
         password = 'passpass',
-        port = 5432,
+        port = 5938,
     )
     return conn
 #connectDB
