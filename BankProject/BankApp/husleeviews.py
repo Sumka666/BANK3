@@ -30,8 +30,6 @@ def dt_qr(request):
         conn = connectDB()
         cur = conn.cursor()
 
-
-
         sql = """
             select  account_number, account_id from accounts where account_token = %s
         """
@@ -45,8 +43,7 @@ def dt_qr(request):
         account_id = rows[0][1]
 
         qrtext = f"dans={account_number}&amount={amount}&description={description}"
-       
-       
+
         sql = """
             insert into qr_codes (account_id, account_number, qr_text, created_at, amount, description) values (%s, %s, %s, now(), %s, %s) returning qr_id
         """
