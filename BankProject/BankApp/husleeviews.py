@@ -30,8 +30,10 @@ def dt_qr(request):
         conn = connectDB()
         cur = conn.cursor()
 
+
+
         sql = """
-            select  account_number from accounts where account_token = %s
+            select  account_number, account_id from accounts where account_token = %s
         """
         cur.execute(sql, (account_token,))
         rows = cur.fetchall()
@@ -40,10 +42,19 @@ def dt_qr(request):
             return JsonResponse(sendResponse(request, 400, data, action))
 
         account_number = rows[0][0]
-        qrtext = f"dans={account_number}&amount={amount}&description={description}"
-        data = [{"qrtext": qrtext}]
-       
+        account_id = rows[0][1]
 
+        qrtext = f"dans={account_number}&amount={amount}&description={description}"
+       
+       
+        sql = """
+            insert into qr_codes (account_id, account_number, qr_text, created_at, amount, description) values (%s, %s, %s, now(), %s, %s) returning qr_id
+        """
+        cur.execute(sql, (account_id, account_number, qrtext, amount, description))
+        qr_id = cur.fetchone()[0]
+        conn.commit()
+
+        data = [{"qrtext": qrtext, "qr_id": qr_id}]
         return JsonResponse(sendResponse(request, 200, data, action))
 
     except Exception as e:
