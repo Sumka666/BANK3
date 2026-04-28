@@ -115,3 +115,44 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+def sendResponse(request, resultCode, data, action = 'no action'):
+    response = {}
+    response['resultCode'] = resultCode
+    response["resultMessage"] = resultMessages.get(resultCode, 'Unknown error')
+    response['data'] = data
+    response["dataSize"] = len(data) if data else 0
+    response['action'] = action
+    response['curdate'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    return response
+
+#sendResponce
+
+
+def connectDB():
+    conn = psycopg2.connect(
+        host = '192.168.0.15',
+        dbname = 'dbsw23',
+        user = 'usersw23',
+        password = 'passpass',
+        port = 5432,
+    )
+    return conn
+#connectDB
+
+
+def disconnectDB(conn):
+    conn.close()
+#disconnectDB
+
+resultMessages = {
+    1001 : "wrong method",
+    1002 : "JSON buruu",
+    1003 : "Talbar dutuu",
+    1004 : "Not found",
+    200 : "Success",
+    1006 : "DB Дотоод алдаа гарлаа",
+
+}
