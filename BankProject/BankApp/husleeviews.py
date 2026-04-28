@@ -57,7 +57,7 @@ def dt_qr(request):
         base64_data = text_to_qrbase64(qrtext)
         
         sql = """
-            insert into qr_codes (account_id, account_number, qr_text, created_at, amount, description) values (%s, %s, %s, now(), %s, %s) returning qr_id
+            INSERT INTO qr_codes (account_id, account_number, qr_text, created_at, amount, description) VALUES (%s, %s, %s, NOW(), %s, %s) RETURNING qr_id
         """
         cur.execute(sql, (account_id, account_number, qrtext, amount, description))
         qr_id = cur.fetchone()[0]

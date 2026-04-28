@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-*ia2*obyi&7icq+%)k-x1+wn8x9fnr(y%bv7t0_2d=zfsznwc0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -137,6 +137,7 @@ def sendResponse(request, resultCode, data, action = 'no action'):
 def connectDB():
     conn = psycopg2.connect(
         host = '192.168.0.15',
+        # host = '59.153.86.254',
         dbname = 'dbsw23',
         user = 'usersw23',
         password = 'passpass',
