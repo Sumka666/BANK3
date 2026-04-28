@@ -6,7 +6,7 @@ from BankApp import views, tamirviews, buykaviews, davaaviews, husleeviews, tume
 urlpatterns = [
     path('api/number/', tamirviews.dt_statement),
     # path('api/transaction/', buykaviews.dt_transaction),
-    # path('api/qr/', husleeviews.dt_qr),
+    path('api/qr/', husleeviews.dt_qr),
     path('api/account/', davaaviews.dt_account),
     # path('api/user/', tumeeviews.dt_user),
     path('api/login/', erhmeeviews.dt_login),

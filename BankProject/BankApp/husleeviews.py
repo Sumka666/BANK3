@@ -3,6 +3,17 @@ from django.views.decorators.csrf import csrf_exempt
 import requests, json
 
 from BankProject.settings import connectDB, sendResponse, disconnectDB
+import qrcode
+import base64
+from io import BytesIO
+
+def text_to_qrbase64(qrtext):
+    img = qrcode.make(qrtext)
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_bytes = buffered.getvalue()
+    base64_data = base64.b64encode(img_bytes).decode('utf-8')
+    return base64_data
 
 @csrf_exempt
 def dt_qr(request):
@@ -43,7 +54,8 @@ def dt_qr(request):
         account_id = rows[0][1]
 
         qrtext = f"dans={account_number}&amount={amount}&description={description}"
-
+        base64_data = text_to_qrbase64(qrtext)
+        
         sql = """
             insert into qr_codes (account_id, account_number, qr_text, created_at, amount, description) values (%s, %s, %s, now(), %s, %s) returning qr_id
         """
@@ -51,7 +63,7 @@ def dt_qr(request):
         qr_id = cur.fetchone()[0]
         conn.commit()
 
-        data = [{"qrtext": qrtext, "qr_id": qr_id}]
+        data = [{"qrtext": qrtext, "qr_id": qr_id, "qr_image": base64_data}]
         return JsonResponse(sendResponse(request, 200, data, action))
 
     except Exception as e:
@@ -63,4 +75,3 @@ def dt_qr(request):
             cur.close()
         if conn:
             disconnectDB(conn)
-
