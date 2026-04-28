@@ -11,19 +11,19 @@ from BankProject.BankProject.settings import connectDB, sendResponse, disconnect
 
 def dt_login(request):
     if request.method != "POST":
-        data = [{"function": "create_entry"}]
-        return JsonResponse(sendResponse("create_entry", 1001, data))
+        data = [{"function": "dt_login"}]
+        return JsonResponse(sendResponse("dt_login", 1001, data))
 
     try:
         jsons = json.loads(request.body)
     except json.JSONDecodeError:
-        data = [{"function": "create_entry"}]
-        return JsonResponse(sendResponse("create_entry", 1002, data))
+        data = [{"function": "dt_login"}]
+        return JsonResponse(sendResponse("dt_login", 1002, data))
 
-    required_fields = ["title", "content", "mood"]
+    required_fields = ["action", "email", "passwordhash"]
     if not all(field in jsons and jsons[field] != "" for field in required_fields):
-        data = [{"function": "create_entry"}]
-        return JsonResponse(sendResponse("create_entry", 1003, data))
+        data = [{"function": "dt_login"}]
+        return JsonResponse(sendResponse("dt_login", 1003, data))
 
     conn = None
     cur = None
