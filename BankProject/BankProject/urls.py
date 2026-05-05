@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from django.urls import path
-from BankApp import views, tamirviews, buykaviews, davaaviews, husleeviews, tumeeviews, erhmeeviews, nomioviews, updateuserviews
+from BankApp import views, tamirviews, buykaviews, davaaviews, husleeviews, tumeeviews, erhmeeviews, nomioviews, updateuserviews, forgotpasswordviews
 
 urlpatterns = [
     path('api/number/', tamirviews.dt_statement),
@@ -12,6 +12,9 @@ urlpatterns = [
     path('api/login/', erhmeeviews.dt_login),
     path('api/register/', nomioviews.dt_register),
     path('api/updateuser/', updateuserviews.dt_update_user),
+    path('api/forgotpassword/', forgotpasswordviews.dt_forgotpassword),
+    path('api/forgotpassword/', forgotpasswordviews.dt_verifyuser),
+    path('api/forgotpassword/', forgotpasswordviews.dt_newpassword),
 
 
 
