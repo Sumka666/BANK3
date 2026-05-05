@@ -4,6 +4,10 @@ import json
 
 from BankProject.settings import connectDB, sendResponse, disconnectDB
 
+
+import random, string
+from datetime import datetime
+
 @csrf_exempt
 def dt_register(request):
     if request.method != "POST":
@@ -45,16 +49,41 @@ def dt_register(request):
         # 2. insert user
         insert_sql = """
             INSERT INTO users (email, firstname, lastname, passwordhash, status, created_at)
-            VALUES (%s, %s, %s, %s, %s, NOW())
+            VALUES (%s, %s, %s, %s, %s, NOW()) RETURNING account_id
         """
         cur.execute(insert_sql, (email, firstname, lastname, passwordhash, 1))
         conn.commit()
 
+        account_id = cur.fetchone()[0]
+
+
+
+        # Define the character pool (letters + digits)
+        chars = string.ascii_letters + string.digits
+
+        # Generate 20 random characters and join them
+        account_token = ''.join(random.choices(chars, k=20))
+
+
+# 2. insert accout number
+        insert_sql = """
+            INSERT INTO accounts(
+	account_id, balance, currency, created_at, account_token)
+	VALUES (%s, %s, %s, %s, %s) RETURNING account_number;
+        """
+        balance = 100000000.00
+        currency = 'MNT'
+        cur.execute(insert_sql, (account_id, balance, currency, datetime.now(), account_token))
+        conn.commit()
+
+        account_number = cur.fetchone()[0]
+
         # 3. return success
         data = [{
-            "email": email,
-            "firstname": firstname,
-            "lastname": lastname
+            "account_number": account_number,
+            "balance": balance,
+            "currency": currency,
+            "account_token": account_token
         }]
 
         return JsonResponse(sendResponse(request, 200, data, action))
