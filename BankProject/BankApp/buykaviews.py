@@ -38,7 +38,7 @@ def dt_username(request):
         rows = cur.fetchall()
         if len(rows) != 1:
             data = []
-            return JsonResponse(sendResponse(request, 400, data, action))
+            return JsonResponse(sendResponse(request, 303, data, action))
 
         fullname = rows[0][0]
 
