@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/transaction/', transaction.dt_transaction),
     path('api/qr/', husleeviews.dt_qr),
     path('api/account/', davaaviews.dt_account),
-    path('api/user/', tumeeviews.dt_user),
+    path('api/statement/', tumeeviews.get_account_statement),
     path('api/login/', erhmeeviews.dt_login),
     path('api/register/', nomioviews.dt_register),
     path('api/updateuser/', updateuserviews.dt_update_user),
