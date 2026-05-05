@@ -30,7 +30,7 @@ def dt_status(request):
             sendResponse(
                 request,
                 1005,
-                [{"Aldaa Invalid status. Allowed: suspended, active, banned"}],
+                [{"error":"Aldaa zaalaa. Hereglegchiin tulviin songolt : suspended, active, banned"}],
                 action
             )
         )
