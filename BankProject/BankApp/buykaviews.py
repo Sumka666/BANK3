@@ -1,26 +1,57 @@
 from django.http import JsonResponse
 from django.db import connection
+from django.views.decorators.csrf import csrf_exempt
+import json
+from BankProject.settings import connectDB, sendResponse, disconnectDB
 
-def get_user_by_account(request):
-    account_number = request.GET.get('account_number')
+@csrf_exempt
+def dt_username(request):
+    if request.method != "POST":
+        data = [{"function": "dt_username"}]
+        return JsonResponse(sendResponse(request, 1001, data))
 
-    if not account_number:
-        return JsonResponse({'error': 'account_number required'}, status=400)
+    try:
+        jsons = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = [{"function": "dt_username"}]
+        return JsonResponse(sendResponse(request, 1002, data))
+    
+    required_fields = ["action", "account_number"]
+    if not all(field in jsons and jsons[field] != "" for field in required_fields):
+        data = [{"function": "dt_username"}]
+        return JsonResponse(sendResponse(request, 1003, data))
+    action = jsons["action"]
+    account_number = jsons["account_number"]
+    conn = None
+    cur = None
 
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT u.firstname, u.lastname
-            FROM accounts a
-            JOIN users u ON a.account_id = u.account_id
-            WHERE a.account_number = %s
-        """, [account_number])
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
 
-        row = cursor.fetchone()
+        sql = """
+            SELECT (users.firstname || ' ' || users.lastname) AS fullname 
+            FROM accounts INNER JOIN users ON accounts.account_id = users.account_id 
+            WHERE accounts.account_number = %s
+        """
+        cur.execute(sql, (account_number, ))
+        rows = cur.fetchall()
+        if len(rows) != 1:
+            data = []
+            return JsonResponse(sendResponse(request, 400, data, action))
 
-    if row:
-        return JsonResponse({
-            'firstname': row[0],
-            'lastname': row[1]
-        })
-    else:
-        return JsonResponse({'error': 'Account not found'}, status=404)
+        fullname = rows[0][0]
+
+        
+        data = [{"account_number": account_number, "fullname": fullname}]
+        return JsonResponse(sendResponse(request, 200, data, action))
+
+    except Exception as e:
+        data = [{"error": str(e)}]
+        return JsonResponse(sendResponse(request, 1006, data, action))
+
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            disconnectDB(conn)
