@@ -117,5 +117,35 @@ def dt_verifyuser(request):
             if conn:            
                 disconnectDB(conn)
 
+@csrf_exempt
 def dt_newpassword(request):
-    pass
+    if request.method != "POST":
+        return JsonResponse(sendResponse(request, 1001, [{"function": "dt_newpassword"}]))
+    try:
+        jsons = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse(sendResponse(request, 1002, [{"function": "dt_newpassword"}]))
+    required_fields = ["action", "account_id", "new_password"]
+    if not all(field in jsons and jsons[field] != "" for field in required_fields):
+        return JsonResponse(sendResponse(request, 1003, [{"function": "dt_newpassword"}]))
+    action = jsons["action"]
+    account_id = jsons["account_id"]
+    new_password = jsons["new_password"]
+    conn = None
+    cur = None
+
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET passwordhash = %s, reset_code = NULL, reset_code_expiry = NOW() WHERE account_id = %s",
+                    (new_password, account_id))
+        conn.commit()
+        data = [{"account_id": account_id, "message": "nuuts ug amjilltai sergeegdlee"},]
+        return JsonResponse(sendResponse(request, 200, data, action))
+    except Exception as e:
+        return JsonResponse(sendResponse(request, 1006, [{"error": str(e)}], action))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            disconnectDB(conn)
