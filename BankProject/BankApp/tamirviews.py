@@ -4,8 +4,8 @@ import requests, json
 
 from BankProject.settings import connectDB, sendResponse, disconnectDB
 
-
-def get_account_statement(request):
+@csrf_exempt
+def dt_statement(request):
     if request.method != "POST":
         data = [{"function": "get_account_statement"}]
         return JsonResponse(sendResponse(request, 1001, data))
@@ -16,51 +16,56 @@ def get_account_statement(request):
         data = [{"function": "get_account_statement"}]
         return JsonResponse(sendResponse(request, 1002, data))
     
-    required_fields = ["action", "account_token", "amount", "description"]
+    required_fields = ["action", "account_id", "account_number"]
     if not all(field in jsons and jsons[field] != "" for field in required_fields):
         data = [{"function": "get_account_statement"}]
         return JsonResponse(sendResponse(request, 1003, data))
     action = jsons["action"]
-    account_token = jsons["account_token"]
-    amount = jsons["amount"]
-    description = jsons["description"]
+    account_id = jsons["account_id"]
+    account_number = jsons["account_number"]
+   
     conn = None
     cur = None
-    # try:
-    #     conn = connectDB()
-    #     cur = conn.cursor()
 
-    #     sql = """
-    #         select  account_number, account_id from accounts where account_token = %s
-    #     """
-    #     cur.execute(sql, (account_token,))
-    #     rows = cur.fetchall()
-    #     if len(rows) != 1:
-    #         data = []
-    #         return JsonResponse(sendResponse(request, 400, data, action))
 
-    #     account_number = rows[0][0]
-    #     account_id = rows[0][1]
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
 
-    #     qrtext = f"dans={account_number}&amount={amount}&description={description}"
-    #     base64_data = text_to_qrbase64(qrtext)
+        sql = """
+            SELECT transaction_id, account_id, default_account_id, secondary_account_id
+                    , amount, currency, transaction_type, status
+                    , description, balance, created_at
+	        FROM transactions
+                WHERE account_id = %s and default_account_id = %s 
+        """
+        cur.execute(sql, (account_id, account_number))
+        rows = cur.fetchall()
         
-    #     sql = """
-    #         INSERT INTO qr_codes (account_id, account_number, qr_text, created_at, amount, description) VALUES (%s, %s, %s, NOW(), %s, %s) RETURNING qr_id
-    #     """
-    #     cur.execute(sql, (account_id, account_number, qrtext, amount, description))
-    #     qr_id = cur.fetchone()[0]
-    #     conn.commit()
+        data = []
+        for row in rows:
+            data.append({
+                "transaction_id": row[0],
+                "account_id": row[1],
+                "default_account_id": row[2],
+                "secondary_account_id": row[3],
+                "amount": row[4],
+                "currency": row[5],
+                "transaction_type": row[6],
+                "status": row[7],
+                "description": row[8],
+                "balance": row[9],
+                "created_at": row[10].strftime('%Y-%m-%d %H:%M:%S') if row[10] else None
+            })
 
-    #     data = [{"qrtext": qrtext, "qr_id": qr_id, "qr_image": base64_data}]
-    #     return JsonResponse(sendResponse(request, 200, data, action))
+        return JsonResponse(sendResponse(request, 200, data, action))
 
-    # except Exception as e:
-    #     data = [{"error": str(e)}]
-    #     return JsonResponse(sendResponse(request, 1006, data, action))
+    except Exception as e:
+        data = [{"error": str(e)}]
+        return JsonResponse(sendResponse(request, 1006, data, action))
 
-    # finally:
-    #     if cur:
-    #         cur.close()
-    #     if conn:
-    #         disconnectDB(conn)
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            disconnectDB(conn)
